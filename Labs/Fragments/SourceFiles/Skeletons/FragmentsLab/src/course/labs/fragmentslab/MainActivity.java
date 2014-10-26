@@ -1,8 +1,8 @@
 package course.labs.fragmentslab;
 
 import android.app.Activity;
-import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.app.FragmentManager;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -22,16 +22,17 @@ public class MainActivity extends Activity implements
 		// If the layout is single-pane, create the FriendsFragment 
 		// and add it to the Activity
 
-		if (!isInTwoPaneMode()) {
+		if (!isInTwoPaneMode()) {			
 			mFriendsFragment = new FriendsFragment();
-			
 			// add the FriendsFragment to the fragment_container
 			FragmentManager fm = getFragmentManager();
-            FragmentTransaction fragmentTransaction = fm.beginTransaction();
-            fragmentTransaction.add(R.id.fragment_container, new FriendsFragment());
-            fragmentTransaction.commit();
+			FragmentTransaction ft = fm.beginTransaction();
+			ft.add(R.id.fragment_container, mFriendsFragment);
+			ft.commit();
 		} else {
+
 			// Otherwise, save a reference to the FeedFragment for later use
+
 			mFeedFragment = (FeedFragment) getFragmentManager()
 					.findFragmentById(R.id.feed_frag);
 		}
@@ -62,13 +63,12 @@ public class MainActivity extends Activity implements
 
 		if (!isInTwoPaneMode()) {
 
-			// replace the fragment_container with the FeedFragment
-            FragmentManager fm = getFragmentManager();
-            FragmentTransaction fragmentTransaction = fm.beginTransaction();
-            fragmentTransaction.replace(R.id.fragment_container, mFeedFragment);
-            fragmentTransaction.addToBackStack(null);
-			fragmentTransaction.commit();		
-
+			//TODO 2 - replace the fragment_container with the FeedFragment
+			FragmentManager     fm = getFragmentManager();
+			FragmentTransaction ft = fm.beginTransaction();
+			ft.addToBackStack(null);
+			ft.replace(R.id.fragment_container, mFeedFragment);
+			ft.commit();
 			// execute transaction now
 			getFragmentManager().executePendingTransactions();
 
