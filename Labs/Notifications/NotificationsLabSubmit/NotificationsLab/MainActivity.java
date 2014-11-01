@@ -87,8 +87,9 @@ public class MainActivity extends Activity implements SelectionListener {
 			// Show a Toast Notification to inform user that 
 			// the app is "Downloading Tweets from Network"
 			Log.i (TAG,"Issuing Toast Message");
-			Toast.makeText(getApplicationContext(), "Downloading Tweets from Network", Toast.LENGTH_LONG).show();		
-
+			
+			Toast.makeText(getApplicationContext(), R.string.greeting, Toast.LENGTH_SHORT).show();
+			
 			new DownloaderTask(this).execute(URL_TSWIFT, URL_RBLACK, URL_LGAGA);
 
 			
@@ -106,10 +107,9 @@ public class MainActivity extends Activity implements SelectionListener {
 					Log.i(TAG, "INTENT RECEIVED");
 
 					if (isOrderedBroadcast()) {
-						Log.i(TAG, "Calling abortBroadcast()");
-						abortBroadcast();
+						setResultCode( MainActivity.IS_ALIVE );
 					}
-					setResultCode( MainActivity.IS_ALIVE );
+					
 				}
 			};
 

@@ -152,18 +152,22 @@ public class DownloaderTask extends AsyncTask<String, Void, String[]> {
 						Log.i(TAG,
 								"Entered result receiver's onReceive() method");
 
-						// TODO: Check whether the result code is not MainActivity.IS_ALIVE
+						// Check whether the result code is not MainActivity.IS_ALIVE
 
 						if ( getResultCode() != MainActivity.IS_ALIVE ) {
 
-							// TODO: If so, create a PendingIntent using the
+							// If so, create a PendingIntent using the
 							// restartMainActivityIntent and set its flags
 							// to FLAG_UPDATE_CURRENT
-
-
-
 							
-							
+							// The PendingIntent that wraps the underlying Intent
+
+							PendingIntent pendingIntent = PendingIntent.getActivity(
+								context, 
+								0, 
+								restartMainActivtyIntent,
+								PendingIntent.FLAG_UPDATE_CURRENT
+								);
 
 							// Uses R.layout.custom_notification for the
 							// layout of the notification View. The xml
@@ -173,29 +177,37 @@ public class DownloaderTask extends AsyncTask<String, Void, String[]> {
 									mApplicationContext.getPackageName(),
 									R.layout.custom_notification);
 
-							// TODO: Set the notification View's text to
+							// Set the notification View's text to
 							// reflect whether the download completed
 							// successfully
+							if (success)
+							{
+								mContentView.setTextViewText(R.id.text, successMsg);
+							}else{
+								mContentView.setTextViewText(R.id.text, failMsg);
+							}
 
-
-
-							
-
-							// TODO: Use the Notification.Builder class to
+							// Use the Notification.Builder class to
 							// create the Notification. You will have to set
 							// several pieces of information. You can use
 							// android.R.drawable.stat_sys_warning
 							// for the small icon. You should also
 							// setAutoCancel(true).
 
+							Notification.Builder notificationBuilder = new Notification.Builder(
+									context)
+									.setTicker("Download complite!")
+									.setSmallIcon(android.R.drawable.stat_sys_warning)
+									.setAutoCancel(true)
+									.setContentTitle("Download complite!")
+									.setContentText( successMsg )
+									.setContentIntent(pendingIntent)
+									.setContent(mContentView);
 
-
-							
-							
-							
-							
-							// TODO: Send the notification
-
+							// Send the notification
+							NotificationManager mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+							mNotificationManager.notify(MY_NOTIFICATION_ID,
+									notificationBuilder.build());
 
 							
 							
