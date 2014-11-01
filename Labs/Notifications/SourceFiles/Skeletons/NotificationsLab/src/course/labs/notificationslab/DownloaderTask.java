@@ -21,7 +21,7 @@ import android.widget.RemoteViews;
 
 public class DownloaderTask extends AsyncTask<String, Void, String[]> {
 
-	private static final int SIM_NETWORK_DELAY = 10000;
+	private static final int SIM_NETWORK_DELAY = 1000;
 	private static final String TAG = "Lab-Notifications";
 	private final int MY_NOTIFICATION_ID = 11151990;
 	private String mFeeds[] = new String[3];
