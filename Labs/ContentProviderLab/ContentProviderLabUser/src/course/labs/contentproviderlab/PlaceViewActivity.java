@@ -50,6 +50,8 @@ public class PlaceViewActivity extends ListActivity implements
 	// A fake location provider used for testing
 	private MockLocationProvider mMockLocationProvider;
 
+	private View footerView;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -65,16 +67,12 @@ public class PlaceViewActivity extends ListActivity implements
 		mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 		
 
-		// TODO - add a footerView to the ListView
+		// DONE - add a footerView to the ListView
 		// You can use footer_view.xml to define the footer
-		
-		View footerView = null;
-		
-		// Can be removed after implementing the TODO above
-		if (null == footerView ) {
-			return;
-		}
 
+		footerView = getLayoutInflater().inflate(R.layout.footer_view, getListView(), false);
+        footerView.setEnabled(false);
+        
 		// TODO - footerView must respond to user clicks, handling 3 cases:
 
 		// There is no current location - response is up to you. The best
@@ -94,38 +92,25 @@ public class PlaceViewActivity extends ListActivity implements
 		footerView.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View view) {
+                Log.i(TAG, "Entered footerView.OnClickListener.onClick()");
 
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
+                if (mCursorAdapter.intersects(mLastLocationReading)) {
+                    Toast.makeText(getApplicationContext(), "You already have this location badge", Toast.LENGTH_SHORT).show();
+                } else {
+                	Log.i(TAG, "Starting Place Download");
+                    new PlaceDownloaderTask(PlaceViewActivity.this, true).execute(mLastLocationReading);
+                }	
 			}
 
 		});
 
 		getListView().addFooterView(footerView);
 
-		// TODO - Create and set empty PlaceViewAdapter
-		mCursorAdapter = null;
+		// Create and set empty PlaceViewAdapter
+		mCursorAdapter = new PlaceViewAdapter(this, null, 0);
 
-		// TODO - Initialize the loader
-		
+		// Initialize the loader
+		getLoaderManager().initLoader(0, null, this);
 		
 	}
 
@@ -135,28 +120,28 @@ public class PlaceViewActivity extends ListActivity implements
 
 		startMockLocationManager();
 
-		// TODO - Check NETWORK_PROVIDER for an existing location reading.
+		// Check NETWORK_PROVIDER for an existing location reading.
 		// Only keep this last reading if it is fresh - less than 5 minutes old
+        mLastLocationReading = mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
 
-		
-		
-		
-		
-		
-		
-		// TODO - register to receive location updates from NETWORK_PROVIDER
+        if (mLastLocationReading != null) {
+            if (ageInMilliseconds(mLastLocationReading) < FIVE_MINS) {
+                footerView.setEnabled(true);
+            } else {
+                mLastLocationReading = null;
+            }
+        }
 
-
-		
-		
+		// register to receive location updates from NETWORK_PROVIDER
+        mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, mMinTime, mMinDistance, this);
 	}
 
 	@Override
 	protected void onPause() {
 
-		// TODO - unregister for location updates
-
-		
+		// unregister for location updates
+        // unregister for location updates
+        mLocationManager.removeUpdates(this);
 		
 		shutdownMockLocationManager();
 		super.onPause();
@@ -165,7 +150,7 @@ public class PlaceViewActivity extends ListActivity implements
 
 	public void addNewPlace(PlaceRecord place) {
 
-		// TODO - Attempt to add place to the adapter, considering the following cases
+		// Attempt to add place to the adapter, considering the following cases
 
 		// A PlaceBadge for this location already exists - issue a Toast message
 		// with the text - "You already have this location badge." Use the PlaceRecord 
@@ -182,21 +167,15 @@ public class PlaceViewActivity extends ListActivity implements
 		
 		// Otherwise - add the PlaceBadge to the adapter
 
-
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
+        if (place == null) {
+            Toast.makeText(getApplicationContext(), "PlaceBadge could not be acquired", Toast.LENGTH_SHORT).show();
+        } else if (mCursorAdapter.intersects(place.getLocation())) {
+            Toast.makeText(getApplicationContext(), "You already have this location badge", Toast.LENGTH_SHORT).show();
+        } else if (place.getCountryName() == null || place.getCountryName().isEmpty()) {
+            Toast.makeText(getApplicationContext(), "There is no country at this location", Toast.LENGTH_SHORT).show();
+        } else {
+        	mCursorAdapter.add(place);
+        }
 		
 	}
 
@@ -204,18 +183,17 @@ public class PlaceViewActivity extends ListActivity implements
 	@Override
 	public void onLocationChanged(Location currentLocation) {
 
-		// TODO - Update location considering the following cases.
+		// Update location considering the following cases.
 		// 1) If there is no last location, set the last location to the current
 		// location.
 		// 2) If the current location is older than the last location, ignore
 		// the current location
 		// 3) If the current location is newer than the last locations, keep the
 		// current location.
-
-
-		
-		
-		
+        footerView.setEnabled(true);
+        if (mLastLocationReading == null || currentLocation.getTime() > mLastLocationReading.getTime()) {
+            mLastLocationReading = currentLocation;
+        }
 		
 	}
 
@@ -240,26 +218,36 @@ public class PlaceViewActivity extends ListActivity implements
 	public Loader<Cursor> onCreateLoader(int arg0, Bundle arg1) {
 
 		
-		// TODO - Create a new CursorLoader and return it
-		return null;
+		// Create a new CursorLoader and return it
+		Log.i(TAG, "Entered onCreateLoader()");
+
+        // filter contacts with empty names
+        String whereClause = "((" + PlaceBadgesContract.COUNTRY_NAME+ " NOTNULL) AND ("
+                + PlaceBadgesContract.COUNTRY_NAME+ " != '' ) ";
+
+        // sort by increasing ID
+        String sortOrder = PlaceBadgesContract._ID + " ASC";
+
+        String columnsToExtract[] = new String[] { PlaceBadgesContract._ID,
+                PlaceBadgesContract.COUNTRY_NAME, PlaceBadgesContract.PLACE_NAME,
+                PlaceBadgesContract.LAT, PlaceBadgesContract.LON
+        };
+
+        return new CursorLoader(this, PlaceBadgesContract.CONTENT_URI, columnsToExtract, whereClause, null, sortOrder);
 	}
 
 	@Override
 	public void onLoadFinished(Loader<Cursor> newLoader, Cursor newCursor) {
-
-		
-		// TODO - Swap in the newCursor
-
+		// Swap in the newCursor
+		mCursorAdapter.swapCursor(newCursor);
 	
 	
 	}
 
 	@Override
 	public void onLoaderReset(Loader<Cursor> newLoader) {
-
-		
-		// TODO - swap in a null Cursor
-
+		// swap in a null Cursor
+		mCursorAdapter.swapCursor(null);
 	
 	
 	}
