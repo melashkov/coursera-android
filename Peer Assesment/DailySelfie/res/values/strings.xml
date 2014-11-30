@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Daily Selfie</string>
+    <string name="take_selfire">Take Selfire</string>
+    
+    <string name="delete_all_selfire">Delete all</string>
+    
+    <string name="title_activity_view_image">ViewImage</string>
+    <string name="hello_world">Hello world!</string>
+    
+    <string name="dialog_delete_one_title">Delete</string>
+    <string name="dialog_delete_one_message">Would you like to delete?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+
+</resources>
