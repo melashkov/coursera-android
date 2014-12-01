@@ -2,36 +2,31 @@ package com.melashkov.dailyselfie;
 
 import java.io.File;
 import java.io.IOException;
-
-import android.support.v7.app.ActionBarActivity;
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.ListView;
 
-
 public class MainActivity extends ActionBarActivity {
 
 	static final String TAG = "Selfie - MainActivity : ";
-
-
 	static final int REQUEST_IMAGE_CAPTURE = 1;
-
-	long mLastSelfieTime;
-
-	String mCurrentPhotoPath;
+	
+	private long mLastSelfieTime;
+	private String mCurrentPhotoPath;
 	
 	private ListViewAdapter mListViewAdapter;
-	
 	private StorageUtil mStorageUtil;
-	
 
+	private AlarmService mAlarmService;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -44,6 +39,11 @@ public class MainActivity extends ActionBarActivity {
             listView.setAdapter(mListViewAdapter);
         }
         mListViewAdapter.notifyDataSetChanged();
+        
+        //Alarms
+        AlarmReceiver.showNotification = 0;
+        mAlarmService = new AlarmService(getApplicationContext());
+        mAlarmService.setRepeatingAlarm();
 	}
 
 	@Override
@@ -71,7 +71,11 @@ public class MainActivity extends ActionBarActivity {
 		{
 			mStorageUtil.deleteAllImages();
 			mListViewAdapter.reloadContent();
-		}
+		}else if(id == R.id.action_cancel_reminder)
+		{
+			mAlarmService.cancelRepeatingAlarm();
+		}		
+		
 		return super.onOptionsItemSelected(item);
 	}
 
@@ -111,8 +115,41 @@ public class MainActivity extends ActionBarActivity {
 		Intent intent = new Intent(this, ViewImageActivity.class);
 		intent.putExtra( ViewImageActivity.EXTRA_PATH,path);
 		startActivity(intent);
-		
-        
 	}
 
+	@Override
+	protected void onPause() {
+		super.onPause();
+		AlarmReceiver.showNotification = 1;
+	}
+
+	@Override
+	public void onStop() {
+		super.onStop();
+		AlarmReceiver.showNotification = 1;
+	}
+
+	@Override
+	public void onRestart() {
+		super.onRestart();
+		AlarmReceiver.showNotification = 1;
+	}
+
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		AlarmReceiver.showNotification = 1;
+	} 
+	
+	@Override
+	public void onStart() {
+		super.onStart();
+		AlarmReceiver.showNotification = 0;
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+		AlarmReceiver.showNotification = 0;
+	}
 }

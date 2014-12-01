@@ -13,5 +13,6 @@
     <string name="dialog_delete_one_message">Would you like to delete?</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
+    <string name="cancel_reminder">Cancel reminder</string>
 
 </resources>
